@@ -14,6 +14,7 @@ Malý 2-D pretekársky simulátor v Pythone, kde sa autíčka učia prejsť tra�
 | [02 · Reťazové pravidlo a gradient descent](#kap-02--reťazové-pravidlo-a-gradient-descent) | [02](https://github.com/kavicka/02-calculus-chain-rule/blob/main/README.sk.md) | brzdiace auto sa učí zastaviť na čiare (backprop cez 90 časových krokov); 3 autá z krokov GD pretekajú | reťazové pravidlo, derivácia, gradient descent | ✅ |
 | [03 · Vektory a matice](#kap-03--vektory-a-matice) | [03](https://github.com/kavicka/03-linear-algebra-shapes/blob/main/README.sk.md) | vektor smeru auta a trate, skalárny súčin, rotačná matica, lúče | vektory, R(θ), lineárne sústavy | ✅ |
 | [04 · Učenie napodobňovaním](#kap-04--neurónová-sieť-na-mojom-micrograde-sa-učí-jazdiť) | [04](https://github.com/kavicka/04-autograd-makemore/blob/main/README.sk.md) | MLP na mojom autograde jazdí po nevidených tratiach, neuróny svietia | MLP, MSE, backprop, train/test, DAgger | ✅ |
+| [06 · Predpoveď zriedkavých nabúraní](#kap-06--predpoveď-zriedkavých-nabúraní) | [06](https://github.com/kavicka/06-probability-bayes-roc) | každé auto ukazuje riziko nabúrania; červený krúžok = skutočný poplach, oranžový = falošný | pravdepodobnosť, nevyvážené triedy, ROC-AUC vs precision–recall | ✅ |
 | ďalej | kroky, kde sa to hodí | jedna kapitola za vhodný krok | pozri [plán nižšie](#ďalšie-kapitoly) | 🚧 |
 
 ## Simulátor (spoločný pre všetky kapitoly)
@@ -120,6 +121,25 @@ Prečo samotné klonovanie nestačí: učiteľ nerobí chyby, takže v dátach n
 
 Chceš byť učiteľom ty? `uv run python -m chapters.play` nahrá tvoje kolá (šípky), potom `uv run python -m chapters.ch04_imitation --demos data/my_laps.npz`.
 
+## Kap. 06 · Predpoveď zriedkavých nabúraní
+
+**Krok 06 naučil:** pravdepodobnosť a Bayes, a prečo ROC-AUC skrýva nevyváženosť tried, kým precision–recall ju ukáže.
+
+**Na autíčkach:** autá s náhodnou `aggression` (0,5–1,7, niektoré príliš odvážne) a zašumeným zatáčaním jazdia po 10 tréningových a 10 nevidených testovacích tratiach. Každá snímka každého auta je jeden príklad: 8 hodnôt senzorov a označenie *„nabúra v nasledujúcej sekunde“*. Nabúrania sú zriedkavé, takže dáta sú prirodzene nevyvážené. Logistická regresia (scikit-learn) sa učí P(nabúranie do 1 s | senzory).
+
+![kap06](assets/ch06_crash_risk.gif)
+![kap06 graf](assets/ch06_crash_risk.png)
+
+| Nevidené testovacie trate | Hodnota |
+|---|---|
+| snímok / snímok s nabúraním do 1 s | 90 620 / **6,3 %** |
+| ROC-AUC | **0,910** |
+| PR-AUC (average precision) | 0,635 (náhodný odhad = 0,063) |
+| precision, keď zachytí 80 % nabúraní | **0,25** → 3,0 falošné poplachy na jeden skutočný |
+| presnosť „vždy povedz bezpečné“ | 93,7 % |
+
+ROC-AUC hovorí „výborné“. Precision–recall hovorí: ak chceš zachytiť väčšinu nabúraní, tri zo štyroch poplachov sú falošné. Platí oboje; odpovedajú na iné otázky. V GIFe je prah poplachu ten, ktorý zachytí 80 % nabúraní; červený krúžok znamená, že auto naozaj do 1 s nabúralo, oranžový je falošný poplach.
+
 ## Ďalšie kapitoly
 
 Kapitoly pribúdajú len tam, kde autíčka naozaj pomôžu. Aktuálny plán:
@@ -153,6 +173,7 @@ uv run python -m chapters.ch02b_chain_rule    # reťazové pravidlo na brzdiacom
 uv run python -m chapters.ch02_gradient       # ~1 min
 uv run python -m chapters.ch03_vectors --watch
 uv run python -m chapters.ch04_imitation      # ~1,5 min, autograd v čistom Pythone je pomalý
+uv run python -m chapters.ch06_crash_risk     # predpoveď nabúrania, ~1 min
 uv run python -m chapters.play                # jazdíš ty, nahrá data/my_laps.npz
 ```
 

@@ -14,6 +14,7 @@ A small 2-D racing simulator in Python where cars learn to drive a track as fast
 | [02 · Chain rule & gradient descent](#ch-02--chain-rule-and-gradient-descent) | [02](https://github.com/kavicka/02-calculus-chain-rule) | a braking car learns to stop on a line (backprop through 90 time steps); 3 cars from GD steps race | chain rule, derivative, gradient descent | ✅ |
 | [03 · Vectors & matrices](#ch-03--vectors-and-matrices) | [03](https://github.com/kavicka/03-linear-algebra-shapes) | heading and track vectors, dot product, rotation matrix, rays | vectors, R(θ), linear systems | ✅ |
 | [04 · Imitation learning](#ch-04--a-neural-network-on-my-micrograd-learns-to-drive) | [04](https://github.com/kavicka/04-autograd-makemore) | an MLP on my own autograd engine drives unseen tracks, neurons light up | MLP, MSE, backprop, train/test, DAgger | ✅ |
+| [06 · Predicting rare crashes](#ch-06--predicting-rare-crashes) | [06](https://github.com/kavicka/06-probability-bayes-roc) | each car shows its crash risk; red ring = real alarm, orange = false alarm | probability, class imbalance, ROC-AUC vs precision–recall | ✅ |
 | next | steps where it fits | one chapter per fitting step | see [plan below](#next-chapters) | 🚧 |
 
 ## The simulator (shared by all chapters)
@@ -120,6 +121,25 @@ Why cloning alone fails: the teacher never makes mistakes, so the data has no ex
 
 Want to be the teacher yourself? `uv run python -m chapters.play` records your laps (arrow keys), then `uv run python -m chapters.ch04_imitation --demos data/my_laps.npz`.
 
+## Ch. 06 · Predicting rare crashes
+
+**Step 06 taught:** probability and Bayes, and why ROC-AUC hides class imbalance while precision–recall shows it.
+
+**On the cars:** cars with a random `aggression` (0.5–1.7, some far too brave) and noisy steering drive 10 training tracks and 10 unseen test tracks. Every frame of every car is one example: the 8 sensor values, and the label *"crashes within the next second"*. Crashes are rare, so the data is naturally imbalanced. A logistic regression (scikit-learn) learns P(crash in 1 s | sensors).
+
+![ch06](assets/ch06_crash_risk.gif)
+![ch06 plot](assets/ch06_crash_risk.png)
+
+| Unseen test tracks | Value |
+|---|---|
+| frames / crash-within-1-s frames | 90 620 / **6.3 %** |
+| ROC-AUC | **0.910** |
+| PR-AUC (average precision) | 0.635 (random guess = 0.063) |
+| precision when catching 80 % of crashes | **0.25** → 3.0 false alarms per real one |
+| accuracy of "always say safe" | 93.7 % |
+
+ROC-AUC says "excellent". Precision–recall says: if you want to catch most crashes, three out of four alarms are false. Both are true; they answer different questions. In the GIF the alarm threshold is the one that catches 80 % of crashes; a red ring means the car really crashed within 1 s, an orange ring is a false alarm.
+
 ## Next chapters
 
 Chapters are added only where the cars genuinely help. Current plan:
@@ -153,6 +173,7 @@ uv run python -m chapters.ch02b_chain_rule    # chain rule on a braking car, a f
 uv run python -m chapters.ch02_gradient       # ~1 min
 uv run python -m chapters.ch03_vectors --watch
 uv run python -m chapters.ch04_imitation      # ~1.5 min, pure-Python autograd is slow
+uv run python -m chapters.ch06_crash_risk     # crash predictor, ~1 min
 uv run python -m chapters.play                # you drive, records data/my_laps.npz
 ```
 
