@@ -143,6 +143,8 @@ Steps **without** a car chapter, because the cars would be forced. They get thei
 
 ## Run it
 
+Chapter 04 imports `micrograd` from step 04: clone [04-autograd-makemore](https://github.com/kavicka/04-autograd-makemore) next to this repo (same parent folder).
+
 ```bash
 cd 05-racing-lab
 uv sync

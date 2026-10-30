@@ -143,6 +143,8 @@ Kroky **bez** kapitoly na autíčkach, lebo by to bolo nasilu. Dostanú vlastný
 
 ## Spustenie
 
+Kapitola 04 importuje `micrograd` z kroku 04: naklonuj [04-autograd-makemore](https://github.com/kavicka/04-autograd-makemore) vedÄ¾a tohto repozitÃ¡ra (do rovnakÃ©ho nadradenÃ©ho prieÄinka).
+
 ```bash
 cd 05-racing-lab
 uv sync
