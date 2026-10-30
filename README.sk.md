@@ -10,10 +10,10 @@ Malý 2-D pretekársky simulátor v Pythone, kde sa autíčka učia prejsť tra�
 
 | Kap. | Krok | Čo vidíš na autíčkach | Koncept | Stav |
 |---|---|---|---|---|
-| [01 · Batching](#kap-01--batching-200-mozgov-v-jednom-násobení-matíc) | [01](../01-setup-benchmark/README.sk.md) | 200 áut s náhodnými mozgami, všetky v jednom násobení matíc | dávkové tenzory, CPU vs GPU, meranie času | ✅ |
-| [02 · Reťazové pravidlo a gradient descent](#kap-02--reťazové-pravidlo-a-gradient-descent) | [02](../02-calculus-chain-rule/README.sk.md) | brzdiace auto sa učí zastaviť na čiare (backprop cez 90 časových krokov); 3 autá z krokov GD pretekajú | reťazové pravidlo, derivácia, gradient descent | ✅ |
-| [03 · Vektory a matice](#kap-03--vektory-a-matice) | [03](../03-linear-algebra-shapes/README.sk.md) | vektor smeru auta a trate, skalárny súčin, rotačná matica, lúče | vektory, R(θ), lineárne sústavy | ✅ |
-| [04 · Učenie napodobňovaním](#kap-04--neurónová-sieť-na-mojom-micrograde-sa-učí-jazdiť) | [04](../04-autograd-makemore/README.sk.md) | MLP na mojom autograde jazdí po nevidených tratiach, neuróny svietia | MLP, MSE, backprop, train/test, DAgger | ✅ |
+| [01 · Batching](#kap-01--batching-200-mozgov-v-jednom-násobení-matíc) | [01](https://github.com/kavicka/01-setup-benchmark/blob/main/README.sk.md) | 200 áut s náhodnými mozgami, všetky v jednom násobení matíc | dávkové tenzory, CPU vs GPU, meranie času | ✅ |
+| [02 · Reťazové pravidlo a gradient descent](#kap-02--reťazové-pravidlo-a-gradient-descent) | [02](https://github.com/kavicka/02-calculus-chain-rule/blob/main/README.sk.md) | brzdiace auto sa učí zastaviť na čiare (backprop cez 90 časových krokov); 3 autá z krokov GD pretekajú | reťazové pravidlo, derivácia, gradient descent | ✅ |
+| [03 · Vektory a matice](#kap-03--vektory-a-matice) | [03](https://github.com/kavicka/03-linear-algebra-shapes/blob/main/README.sk.md) | vektor smeru auta a trate, skalárny súčin, rotačná matica, lúče | vektory, R(θ), lineárne sústavy | ✅ |
+| [04 · Učenie napodobňovaním](#kap-04--neurónová-sieť-na-mojom-micrograde-sa-učí-jazdiť) | [04](https://github.com/kavicka/04-autograd-makemore/blob/main/README.sk.md) | MLP na mojom autograde jazdí po nevidených tratiach, neuróny svietia | MLP, MSE, backprop, train/test, DAgger | ✅ |
 | ďalej | kroky, kde sa to hodí | jedna kapitola za vhodný krok | pozri [plán nižšie](#ďalšie-kapitoly) | 🚧 |
 
 ## Simulátor (spoločný pre všetky kapitoly)

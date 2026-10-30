@@ -10,10 +10,10 @@ A small 2-D racing simulator in Python where cars learn to drive a track as fast
 
 | Ch. | Step | What you see on the cars | Concept | Status |
 |---|---|---|---|---|
-| [01 · Batching](#ch-01--batching-200-brains-in-one-matmul) | [01](../01-setup-benchmark/) | 200 cars with random brains, all computed in one matmul | batched tensors, CPU vs GPU, timing | ✅ |
-| [02 · Chain rule & gradient descent](#ch-02--chain-rule-and-gradient-descent) | [02](../02-calculus-chain-rule/) | a braking car learns to stop on a line (backprop through 90 time steps); 3 cars from GD steps race | chain rule, derivative, gradient descent | ✅ |
-| [03 · Vectors & matrices](#ch-03--vectors-and-matrices) | [03](../03-linear-algebra-shapes/) | heading and track vectors, dot product, rotation matrix, rays | vectors, R(θ), linear systems | ✅ |
-| [04 · Imitation learning](#ch-04--a-neural-network-on-my-micrograd-learns-to-drive) | [04](../04-autograd-makemore/) | an MLP on my own autograd engine drives unseen tracks, neurons light up | MLP, MSE, backprop, train/test, DAgger | ✅ |
+| [01 · Batching](#ch-01--batching-200-brains-in-one-matmul) | [01](https://github.com/kavicka/01-setup-benchmark) | 200 cars with random brains, all computed in one matmul | batched tensors, CPU vs GPU, timing | ✅ |
+| [02 · Chain rule & gradient descent](#ch-02--chain-rule-and-gradient-descent) | [02](https://github.com/kavicka/02-calculus-chain-rule) | a braking car learns to stop on a line (backprop through 90 time steps); 3 cars from GD steps race | chain rule, derivative, gradient descent | ✅ |
+| [03 · Vectors & matrices](#ch-03--vectors-and-matrices) | [03](https://github.com/kavicka/03-linear-algebra-shapes) | heading and track vectors, dot product, rotation matrix, rays | vectors, R(θ), linear systems | ✅ |
+| [04 · Imitation learning](#ch-04--a-neural-network-on-my-micrograd-learns-to-drive) | [04](https://github.com/kavicka/04-autograd-makemore) | an MLP on my own autograd engine drives unseen tracks, neurons light up | MLP, MSE, backprop, train/test, DAgger | ✅ |
 | next | steps where it fits | one chapter per fitting step | see [plan below](#next-chapters) | 🚧 |
 
 ## The simulator (shared by all chapters)
