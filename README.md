@@ -15,6 +15,7 @@ A small 2-D racing simulator in Python where cars learn to drive a track as fast
 | [03 · Vectors & matrices](#ch-03--vectors-and-matrices) | [03](https://github.com/kavicka/03-linear-algebra-shapes) | heading and track vectors, dot product, rotation matrix, rays | vectors, R(θ), linear systems | ✅ |
 | [04 · Imitation learning](#ch-04--a-neural-network-on-my-micrograd-learns-to-drive) | [04](https://github.com/kavicka/04-autograd-makemore) | an MLP on my own autograd engine drives unseen tracks, neurons light up | MLP, MSE, backprop, train/test, DAgger | ✅ |
 | [06 · Predicting rare crashes](#ch-06--predicting-rare-crashes) | [06](https://github.com/kavicka/06-probability-bayes-roc) | each car shows its crash risk; red ring = real alarm, orange = false alarm | probability, class imbalance, ROC-AUC vs precision–recall | ✅ |
+| [11 · Driving from pixels](#ch-11--driving-from-pixels) | [11](https://github.com/kavicka/11-image-classifier-pytorch) | no rays: a CNN drives from a 64×64 camera picture on unseen tracks, Grad-CAM shows where it looks | convolution, DAgger on pixels, Grad-CAM vs HiResCAM | ✅ |
 | next | steps where it fits | one chapter per fitting step | see [plan below](#next-chapters) | 🚧 |
 
 ## The simulator (shared by all chapters)
@@ -140,6 +141,29 @@ Want to be the teacher yourself? `uv run python -m chapters.play` records your l
 
 ROC-AUC says "excellent". Precision–recall says: if you want to catch most crashes, three out of four alarms are false. Both are true; they answer different questions. In the GIF the alarm threshold is the one that catches 80 % of crashes; a red ring means the car really crashed within 1 s, an orange ring is a false alarm.
 
+## Ch. 11 · Driving from pixels
+
+**Step 11 taught:** convolution, a training loop in PyTorch, MPS, Grad-CAM.
+
+**On the cars:** the rays are gone. The car gets a 64×64 top-down picture of the road, rotated so that "up" is always its own heading, plus its speed as one number. Everything else follows ch. 04: the baseline teaches, DAgger adds the student's own mistakes (5 rounds, about 19,000 frames). Mirroring a picture and flipping the steering sign doubles the data, otherwise a counter-clockwise track rarely shows a right turn.
+
+Two students get the same recipe, each with 3 seeds: a CNN (154,882 weights) and an MLP on the flattened pixels (133,378 weights).
+
+![ch11](assets/ch11_pixels.gif)
+![ch11 plot](assets/ch11_pixels.png)
+
+| Driver | Input | 10 test tracks finished (3 seeds) | 50 unseen tracks finished (3 seeds) | Mean progress on the 50 |
+|---|---|---|---|---|
+| Baseline (teacher) | 7 rays + speed | 9 | **43** | 93.9 % |
+| CNN + DAgger | pixels + speed | 7, 9, 9 | **35, 40, 39** (mean 38.0) | 86.0, 92.8, 90.7 % |
+| MLP + DAgger | pixels + speed | 6, 8, 8 | 36, 36, 32 (mean 34.7) | 90.8, 85.0, 82.7 % |
+
+The CNN needs no ray geometry and gets close to the teacher that does: 38 of 50 laps against 43. It ends with about half the training loss of the MLP, and it beats the MLP on 50 tracks by 3 laps on average. The seeds overlap (the worst CNN finishes 35, the best MLP 36), so with 3 seeds this is a trend, not a proof. Ten tracks would have hidden it: the table in the first run of this chapter showed 7 vs 6 and one seed only.
+
+Unlike the classifiers in step 11, this CNN does **not** end in global average pooling. A classifier asks *whether* something is in the picture; a driver asks *where* the road is, and averaging would throw that away.
+
+**A bug worth keeping.** Classic Grad-CAM averages the gradient across the feature map, which is valid for a global-average-pool head. Here the head flattens, so the same channel can mean opposite things in different cells. In the first run the heatmap sat on empty grass: 9.7 % of it near the kerbs, which cover 21 % of the picture. Multiplying gradient and activation cell by cell (HiResCAM) gives 26.6 % against 21.4 % over 223 frames. That is better than chance but still modest, so treat the orange blobs as a hint and not as an explanation.
+
 ## Next chapters
 
 Chapters are added only where the cars genuinely help. Current plan:
@@ -147,7 +171,6 @@ Chapters are added only where the cars genuinely help. Current plan:
 | Step (phase) | Chapter idea |
 |---|---|
 | P2 · classic ML, evaluation | **Does it generalize?** All drivers × train/val/test tracks in one table; overfitting on 1 track vs 10 tracks; choosing by validation. Plus **evolution**: optimisation without gradients, compared with GD. |
-| P3 · deep learning, CNN | **Driving from pixels:** a small top-down camera image instead of rays, a CNN in PyTorch on MPS, Grad-CAM shows where it looks. |
 | after P3 · RL | **Reinforcement learning:** PPO learns only from reward (progress − crashes). Copying vs evolution vs RL on the same test tracks. |
 | P10 · inference | export the policy to ONNX / Core ML, 1000 cars at once, FPS before/after, quantisation. |
 | P11 · MLOps | every training run logged to MLflow; a CI check fails if a new model is slower on the test tracks. |
@@ -174,6 +197,7 @@ uv run python -m chapters.ch02_gradient       # ~1 min
 uv run python -m chapters.ch03_vectors --watch
 uv run python -m chapters.ch04_imitation      # ~1.5 min, pure-Python autograd is slow
 uv run python -m chapters.ch06_crash_risk     # crash predictor, ~1 min
+uv run python -m chapters.ch11_pixels        # CNN vs MLP on pixels, 3 seeds on MPS (add --watch for the saved model)
 uv run python -m chapters.play                # you drive, records data/my_laps.npz
 ```
 

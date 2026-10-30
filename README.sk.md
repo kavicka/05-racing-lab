@@ -15,6 +15,7 @@ Malý 2-D pretekársky simulátor v Pythone, kde sa autíčka učia prejsť tra�
 | [03 · Vektory a matice](#kap-03--vektory-a-matice) | [03](https://github.com/kavicka/03-linear-algebra-shapes/blob/main/README.sk.md) | vektor smeru auta a trate, skalárny súčin, rotačná matica, lúče | vektory, R(θ), lineárne sústavy | ✅ |
 | [04 · Učenie napodobňovaním](#kap-04--neurónová-sieť-na-mojom-micrograde-sa-učí-jazdiť) | [04](https://github.com/kavicka/04-autograd-makemore/blob/main/README.sk.md) | MLP na mojom autograde jazdí po nevidených tratiach, neuróny svietia | MLP, MSE, backprop, train/test, DAgger | ✅ |
 | [06 · Predpoveď zriedkavých nabúraní](#kap-06--predpoveď-zriedkavých-nabúraní) | [06](https://github.com/kavicka/06-probability-bayes-roc) | každé auto ukazuje riziko nabúrania; červený krúžok = skutočný poplach, oranžový = falošný | pravdepodobnosť, nevyvážené triedy, ROC-AUC vs precision–recall | ✅ |
+| [11 · Jazda z pixelov](#kap-11--jazda-z-pixelov) | [11](https://github.com/kavicka/11-image-classifier-pytorch/blob/main/README.sk.md) | žiadne lúče: CNN jazdí z obrázka 64×64 po neznámych tratiach, Grad-CAM ukazuje, kam sa pozerá | konvolúcia, DAgger na pixeloch, Grad-CAM vs HiResCAM | ✅ |
 | ďalej | kroky, kde sa to hodí | jedna kapitola za vhodný krok | pozri [plán nižšie](#ďalšie-kapitoly) | 🚧 |
 
 ## Simulátor (spoločný pre všetky kapitoly)
@@ -140,6 +141,29 @@ Chceš byť učiteľom ty? `uv run python -m chapters.play` nahrá tvoje kolá (
 
 ROC-AUC hovorí „výborné“. Precision–recall hovorí: ak chceš zachytiť väčšinu nabúraní, tri zo štyroch poplachov sú falošné. Platí oboje; odpovedajú na iné otázky. V GIFe je prah poplachu ten, ktorý zachytí 80 % nabúraní; červený krúžok znamená, že auto naozaj do 1 s nabúralo, oranžový je falošný poplach.
 
+## Kap. 11 · Jazda z pixelov
+
+**Krok 11 ma naučil:** konvolúciu, trénovací cyklus v PyTorchi, MPS, Grad-CAM.
+
+**Na autíčkach:** lúče sú preč. Auto dostane obrázok cesty zhora s rozmerom 64×64, otočený tak, aby „hore“ bol vždy jeho smer jazdy, a k tomu rýchlosť ako jedno číslo. Všetko ostatné je ako v kap. 04: učí baseline a DAgger pridáva vlastné chyby študenta (5 kôl, asi 19 000 snímok). Zrkadlenie obrázka s otočením znamienka zatáčania zdvojnásobí dáta, inak by trať proti smeru hodinových ručičiek ukazovala pravotočivú zákrutu len zriedka.
+
+Dvaja študenti dostanú rovnaký recept, každý s 3 seedmi: CNN (154 882 váh) a MLP na sploštených pixeloch (133 378 váh).
+
+![kap11](assets/ch11_pixels.gif)
+![kap11 graf](assets/ch11_pixels.png)
+
+| Vodič | Vstup | Dokončené z 10 testovacích tratí (3 seedy) | Dokončené z 50 neznámych tratí (3 seedy) | Priemerný postup na 50 tratiach |
+|---|---|---|---|---|
+| Baseline (učiteľ) | 7 lúčov + rýchlosť | 9 | **43** | 93,9 % |
+| CNN + DAgger | pixely + rýchlosť | 7, 9, 9 | **35, 40, 39** (priemer 38,0) | 86,0, 92,8, 90,7 % |
+| MLP + DAgger | pixely + rýchlosť | 6, 8, 8 | 36, 36, 32 (priemer 34,7) | 90,8, 85,0, 82,7 % |
+
+CNN nepotrebuje geometriu lúčov a aj tak sa dostane blízko k učiteľovi, ktorý ju má: 38 kôl z 50 oproti 43. Končí zhruba s polovičnou tréningovou loss oproti MLP a na 50 tratiach ho v priemere porazí o 3 kolá. Seedy sa prekrývajú (najhorší CNN dokončí 35, najlepší MLP 36), takže pri 3 seedoch je to trend, nie dôkaz. Desať tratí by to zakrylo: prvý beh tejto kapitoly ukázal 7 vs 6 a len jeden seed.
+
+Na rozdiel od klasifikátorov v kroku 11 táto CNN **nekončí** global average poolingom. Klasifikátor sa pýta, *či* je niečo na obrázku; vodič sa pýta, *kde* je cesta, a priemerovanie by túto informáciu zahodilo.
+
+**Chyba, ktorú stojí za to si nechať.** Klasický Grad-CAM priemeruje gradient cez celú mapu príznakov, čo platí pre hlavu s global average poolingom. Tu hlava sploští mapu, takže ten istý kanál môže v rôznych bunkách znamenať opačné veci. V prvom behu heatmapa sedela na prázdnej tráve: 9,7 % z nej pri obrubníkoch, ktoré zaberajú 21 % obrázka. Násobenie gradientu a aktivácie po bunkách (HiResCAM) dáva 26,6 % oproti 21,4 % na 223 snímkach. To je lepšie než náhoda, ale stále skromné, takže oranžové fľaky ber ako nápovedu, nie ako vysvetlenie.
+
 ## Ďalšie kapitoly
 
 Kapitoly pribúdajú len tam, kde autíčka naozaj pomôžu. Aktuálny plán:
@@ -147,7 +171,6 @@ Kapitoly pribúdajú len tam, kde autíčka naozaj pomôžu. Aktuálny plán:
 | Krok (fáza) | Nápad na kapitolu |
 |---|---|
 | P2 · klasické ML, evaluácia | **Zovšeobecňuje to?** Všetci vodiči × train/val/test trate v jednej tabuľke; overfitting na 1 trati vs na 10 tratiach; výber podľa validácie. Plus **evolúcia**: optimalizácia bez gradientov v porovnaní s GD. |
-| P3 · deep learning, CNN | **Jazda z pixelov:** namiesto lúčov malý obrázok z kamery zhora, CNN v PyTorchi na MPS, Grad-CAM ukáže, kam sa sieť pozerá. |
 | po P3 · RL | **Reinforcement learning:** PPO sa učí len z odmeny (postup − nabúrania). Napodobňovanie vs evolúcia vs RL na tých istých testovacích tratiach. |
 | P10 · inferencia | export vodiča do ONNX / Core ML, 1000 áut naraz, FPS pred/po, kvantizácia. |
 | P11 · MLOps | každý tréning zalogovaný v MLflow; CI kontrola zlyhá, ak je nový model na testovacích tratiach pomalší. |
@@ -174,6 +197,7 @@ uv run python -m chapters.ch02_gradient       # ~1 min
 uv run python -m chapters.ch03_vectors --watch
 uv run python -m chapters.ch04_imitation      # ~1,5 min, autograd v čistom Pythone je pomalý
 uv run python -m chapters.ch06_crash_risk     # predpoveď nabúrania, ~1 min
+uv run python -m chapters.ch11_pixels        # CNN vs MLP na pixeloch, 3 seedy na MPS (s --watch uložený model)
 uv run python -m chapters.play                # jazdíš ty, nahrá data/my_laps.npz
 ```
 

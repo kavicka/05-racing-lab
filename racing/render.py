@@ -162,6 +162,14 @@ class Canvas:
                 if li == n_layers - 1 and labels_out:
                     self.screen.blit(self.small.render(labels_out[j], True, MUTED), (p[0] + 12, p[1] - 8))
 
+    def image(self, x, y, rgb: np.ndarray, scale: int, label: str = "") -> None:
+        """Draw an (H, W, 3) uint8 array at integer zoom, for showing what a camera sees."""
+        pg = self.pg
+        surf = pg.surfarray.make_surface(rgb.swapaxes(0, 1))
+        self.screen.blit(pg.transform.scale_by(surf, scale), (x, y))
+        if label:
+            self.screen.blit(self.small.render(label, True, MUTED), (x, y - 16))
+
     # --- output ---------------------------------------------------------------
     def show(self) -> bool:
         """Push a frame to the window or GIF buffer. Returns False when the user closes the window."""
