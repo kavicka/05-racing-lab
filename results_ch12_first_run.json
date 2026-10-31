@@ -1,0 +1,43 @@
+{
+ "note": "PPO before standing starts were added to training; cars always respawned rolling (0-200 px/s)",
+ "unseen": [
+  {
+   "seed": 0,
+   "finished": 50,
+   "wrong_way": 0,
+   "crashed_or_stuck": 0,
+   "failed_tracks": []
+  },
+  {
+   "seed": 1,
+   "finished": 43,
+   "wrong_way": 4,
+   "crashed_or_stuck": 3,
+   "failed_tracks": [
+    104,
+    205,
+    208,
+    210,
+    214,
+    217,
+    234
+   ]
+  },
+  {
+   "seed": 2,
+   "finished": 42,
+   "wrong_way": 3,
+   "crashed_or_stuck": 5,
+   "failed_tracks": [
+    104,
+    205,
+    206,
+    208,
+    210,
+    231,
+    232,
+    234
+   ]
+  }
+ ]
+}

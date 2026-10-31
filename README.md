@@ -16,6 +16,7 @@ A small 2-D racing simulator in Python where cars learn to drive a track as fast
 | [04 · Imitation learning](#ch-04--a-neural-network-on-my-micrograd-learns-to-drive) | [04](https://github.com/kavicka/04-autograd-makemore) | an MLP on my own autograd engine drives unseen tracks, neurons light up | MLP, MSE, backprop, train/test, DAgger | ✅ |
 | [06 · Predicting rare crashes](#ch-06--predicting-rare-crashes) | [06](https://github.com/kavicka/06-probability-bayes-roc) | each car shows its crash risk; red ring = real alarm, orange = false alarm | probability, class imbalance, ROC-AUC vs precision–recall | ✅ |
 | [11 · Driving from pixels](#ch-11--driving-from-pixels) | [11](https://github.com/kavicka/11-image-classifier-pytorch) | no rays: a CNN drives from a 64×64 camera picture on unseen tracks, Grad-CAM shows where it looks | convolution, DAgger on pixels, Grad-CAM vs HiResCAM | ✅ |
+| [12 · Reinforcement learning](#ch-12--reinforcement-learning) | after [11](https://github.com/kavicka/11-image-classifier-pytorch) | no teacher: PPO learns from progress − crashes and beats the baseline's lap times by 34 % | RL, PPO, advantage, exploration, seeds | ✅ |
 | next | steps where it fits | one chapter per fitting step | see [plan below](#next-chapters) | 🚧 |
 
 ## The simulator (shared by all chapters)
@@ -164,6 +165,40 @@ Unlike the classifiers in step 11, this CNN does **not** end in global average p
 
 **A bug worth keeping.** Classic Grad-CAM averages the gradient across the feature map, which is valid for a global-average-pool head. Here the head flattens, so the same channel can mean opposite things in different cells. In the first run the heatmap sat on empty grass: 9.7 % of it near the kerbs, which cover 21 % of the picture. Multiplying gradient and activation cell by cell (HiResCAM) gives 26.6 % against 21.4 % over 223 frames. That is better than chance but still modest, so treat the orange blobs as a hint and not as an explanation.
 
+## Ch. 12 · Reinforcement learning
+
+**Step 11 ended with:** a car that copies a teacher can only get as good as the teacher. What if nobody teaches?
+
+**On the cars:** PPO, written by hand in PyTorch. 60 cars drive the 10 training tracks and get one signal: progress along the track, minus a penalty for crashing. Nobody says what a good steering value would be. The network is 8 → 64 → 64 → 2 (4,866 weights in the policy) on the same 8 numbers as ch. 04.
+
+- **Collect.** All cars drive 200 steps with the current policy, plus Gaussian noise so they try things.
+- **Judge.** A second network, the critic, predicts future reward. GAE turns the gap between prediction and reality into an *advantage*: how much better was this action than expected?
+- **Improve, carefully.** Actions with a positive advantage become more likely. The update is clipped to ±20 %, because this data says nothing reliable about a policy far from the one that collected it.
+- **The clock is not a crash.** A car stopped after 40 s still had a future, so the learner bootstraps from the critic's estimate there. A crash really ends it: the future is worth 0.
+
+The control group has the same network, the same tracks and the same 50 unseen tracks, but it copies the baseline with DAgger, as in ch. 04.
+
+![ch12](assets/ch12_ppo.gif)
+![ch12 plot](assets/ch12_ppo.png)
+
+The GIF shows four stages of one training run racing on an unseen track.
+
+| Driver | Learns from | Experience | 50 unseen tracks finished (3 seeds) | Mean progress | Mean lap, unseen |
+|---|---|---|---|---|---|
+| Baseline | hand-written rules | none | **43** | 93.9 % | 11.44 s |
+| Copying + DAgger | the baseline's answers | about 19,100 frames | 43, 43, 43 | 93.9 % | 11.43–11.47 s |
+| PPO | reward only | 3,000,000 car steps | **50, 43, 50** | 100, 72.2, 100 % | **7.63–7.70 s** |
+
+The lap times in this table cover whatever each driver finishes. Compared only on the tracks both finish, PPO needs 7.45–7.67 s against the baseline's 11.43–11.44 s, about **34 % less time**.
+
+Copying matches its teacher so exactly that it fails the same way, and that is the lesson of this chapter. Its ceiling is the teacher. PPO has no teacher, so it has no ceiling, and two seeds of three drive every unseen track. The price is experience: 3,000,000 steps are about 28 hours of simulated driving, 157× what copying needed. In wall-clock time it is still cheap here: 193 s per seed on one CPU core (Mac mini M4 Pro; a small MLP gains nothing from MPS).
+
+**A bug worth keeping.** In the first run the seeds finished 50, 43 and 42 of 50 tracks, and the weaker two had a mean progress near 72 %, which does not add up: 43 finished laps plus 7 ordinary crashes would be higher. The numbers said that the failures barely left the start, so I looked. Several cars were alive and driving **backwards**, up to 3.9 laps the wrong way. Steering in this simulator turns the car even at speed 0, so at a standing start the policy spun round on the spot, and nothing in its 8 inputs shows which way the lap goes. Training had never shown it the problem, because cars always respawned rolling at 0–200 px/s. Half of the respawns are now standing starts. That took seed 2 from 42 to 50 laps and left seed 0 at 50.
+
+It did not fix seed 1, which still finishes 43 with 4 wrong-way laps. Its reward stays around 0.05 per step against 0.07 for the other two, so it is stuck in a worse habit. Six of its seven failures are tracks where the baseline fails too. Three seeds cannot say how often this happens, so read the result as "usually excellent, sometimes not", and note what that means: a single PPO run is not a reliable result.
+
+**Limits.** I chose the standing-start fix after looking at failures on the 50 unseen tracks, so those tracks are no longer fully independent for PPO. Standing starts are the one weakness of this policy that I checked, and they are a real gap in training rather than a tweak to fit one track, but a clean claim would need fresh tracks. All tracks run counter-clockwise, so "turn left" is a free hint that a mirrored track would take away. Evolution, planned for this comparison, is not built yet.
+
 ## Next chapters
 
 Chapters are added only where the cars genuinely help. Current plan:
@@ -171,7 +206,6 @@ Chapters are added only where the cars genuinely help. Current plan:
 | Step (phase) | Chapter idea |
 |---|---|
 | P2 · classic ML, evaluation | **Does it generalize?** All drivers × train/val/test tracks in one table; overfitting on 1 track vs 10 tracks; choosing by validation. Plus **evolution**: optimisation without gradients, compared with GD. |
-| after P3 · RL | **Reinforcement learning:** PPO learns only from reward (progress − crashes). Copying vs evolution vs RL on the same test tracks. |
 | P10 · inference | export the policy to ONNX / Core ML, 1000 cars at once, FPS before/after, quantisation. |
 | P11 · MLOps | every training run logged to MLflow; a CI check fails if a new model is slower on the test tracks. |
 
@@ -198,6 +232,7 @@ uv run python -m chapters.ch03_vectors --watch
 uv run python -m chapters.ch04_imitation      # ~1.5 min, pure-Python autograd is slow
 uv run python -m chapters.ch06_crash_risk     # crash predictor, ~1 min
 uv run python -m chapters.ch11_pixels        # CNN vs MLP on pixels, 3 seeds on MPS (add --watch for the saved model)
+uv run python -m chapters.ch12_ppo            # PPO + DAgger control, 3 seeds, ~4 min per seed on CPU (add --watch for the saved run)
 uv run python -m chapters.play                # you drive, records data/my_laps.npz
 ```
 

@@ -6,3 +6,6 @@ mlruns/
 .pytest_cache/
 data/*.npz
 data/*.pt
+data/*.json
+data/*.log
+data/ch12_run1/

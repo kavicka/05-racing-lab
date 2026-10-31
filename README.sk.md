@@ -16,6 +16,7 @@ Malý 2-D pretekársky simulátor v Pythone, kde sa autíčka učia prejsť tra�
 | [04 · Učenie napodobňovaním](#kap-04--neurónová-sieť-na-mojom-micrograde-sa-učí-jazdiť) | [04](https://github.com/kavicka/04-autograd-makemore/blob/main/README.sk.md) | MLP na mojom autograde jazdí po nevidených tratiach, neuróny svietia | MLP, MSE, backprop, train/test, DAgger | ✅ |
 | [06 · Predpoveď zriedkavých nabúraní](#kap-06--predpoveď-zriedkavých-nabúraní) | [06](https://github.com/kavicka/06-probability-bayes-roc) | každé auto ukazuje riziko nabúrania; červený krúžok = skutočný poplach, oranžový = falošný | pravdepodobnosť, nevyvážené triedy, ROC-AUC vs precision–recall | ✅ |
 | [11 · Jazda z pixelov](#kap-11--jazda-z-pixelov) | [11](https://github.com/kavicka/11-image-classifier-pytorch/blob/main/README.sk.md) | žiadne lúče: CNN jazdí z obrázka 64×64 po neznámych tratiach, Grad-CAM ukazuje, kam sa pozerá | konvolúcia, DAgger na pixeloch, Grad-CAM vs HiResCAM | ✅ |
+| [12 · Reinforcement learning](#kap-12--reinforcement-learning) | po [11](https://github.com/kavicka/11-image-classifier-pytorch/blob/main/README.sk.md) | žiadny učiteľ: PPO sa učí z postupu mínus nabúrania a prekoná časy kôl baseline o 34 % | RL, PPO, výhoda, prieskum, seedy | ✅ |
 | ďalej | kroky, kde sa to hodí | jedna kapitola za vhodný krok | pozri [plán nižšie](#ďalšie-kapitoly) | 🚧 |
 
 ## Simulátor (spoločný pre všetky kapitoly)
@@ -164,6 +165,40 @@ Na rozdiel od klasifikátorov v kroku 11 táto CNN **nekončí** global average 
 
 **Chyba, ktorú stojí za to si nechať.** Klasický Grad-CAM priemeruje gradient cez celú mapu príznakov, čo platí pre hlavu s global average poolingom. Tu hlava sploští mapu, takže ten istý kanál môže v rôznych bunkách znamenať opačné veci. V prvom behu heatmapa sedela na prázdnej tráve: 9,7 % z nej pri obrubníkoch, ktoré zaberajú 21 % obrázka. Násobenie gradientu a aktivácie po bunkách (HiResCAM) dáva 26,6 % oproti 21,4 % na 223 snímkach. To je lepšie než náhoda, ale stále skromné, takže oranžové fľaky ber ako nápovedu, nie ako vysvetlenie.
 
+## Kap. 12 · Reinforcement learning
+
+**Krok 11 skončil takto:** auto, ktoré napodobňuje učiteľa, môže byť najviac také dobré ako učiteľ. Čo ak nikto neučí?
+
+**Na autíčkach:** PPO, napísané ručne v PyTorchi. 60 áut jazdí na 10 tréningových tratiach a dostáva jediný signál: postup po trati mínus trest za nabúranie. Nikto nepovie, aká hodnota riadenia by bola dobrá. Sieť je 8 → 64 → 64 → 2 (4 866 váh v politike) na tých istých 8 číslach ako v kap. 04.
+
+- **Zber.** Všetky autá jazdia 200 krokov s aktuálnou politikou a gaussovským šumom, aby skúšali nové veci.
+- **Posúdenie.** Druhá sieť, kritik, predpovedá budúcu odmenu. GAE premení rozdiel medzi predpoveďou a realitou na *výhodu*: o koľko lepšia bola táto akcia, než sa čakalo?
+- **Opatrné zlepšenie.** Akcie s kladnou výhodou budú pravdepodobnejšie. Zmena je orezaná na ±20 %, lebo tieto dáta nehovoria nič spoľahlivé o politike ďaleko od tej, ktorá ich nazbierala.
+- **Hodiny nie sú nehoda.** Auto zastavené po 40 s malo ešte budúcnosť, takže učiaci sa algoritmus tam použije odhad kritika. Nehoda koniec naozaj je: budúcnosť má hodnotu 0.
+
+Kontrolná skupina má rovnakú sieť, rovnaké trate aj rovnakých 50 neznámych tratí, ale napodobňuje baseline cez DAgger, ako v kap. 04.
+
+![ch12](assets/ch12_ppo.gif)
+![ch12 graf](assets/ch12_ppo.png)
+
+GIF ukazuje štyri fázy jedného tréningu, ktoré pretekajú na neznámej trati.
+
+| Vodič | Učí sa z | Skúsenosť | Dokončené z 50 neznámych tratí (3 seedy) | Priemerný postup | Priemerné kolo, neznáme trate |
+|---|---|---|---|---|---|
+| Baseline | ručne písané pravidlá | žiadna | **43** | 93,9 % | 11,44 s |
+| Napodobňovanie + DAgger | odpovede baseline | asi 19 100 snímok | 43, 43, 43 | 93,9 % | 11,43–11,47 s |
+| PPO | len odmena | 3 000 000 krokov áut | **50, 43, 50** | 100, 72,2, 100 % | **7,63–7,70 s** |
+
+Časy kôl v tejto tabuľke zahŕňajú to, čo daný vodič dokončí. Len na tratiach, ktoré dokončia obaja, potrebuje PPO 7,45–7,67 s oproti 11,43–11,44 s baseline, teda asi **o 34 % menej času**.
+
+Napodobňovanie sa zhoduje s učiteľom tak presne, že zlyháva rovnako, a to je ponaučenie tejto kapitoly. Jeho strop je učiteľ. PPO učiteľa nemá, takže nemá ani strop, a dva seedy z troch prejdú každú neznámu trať. Cena je skúsenosť: 3 000 000 krokov je asi 28 hodín simulovanej jazdy, 157× viac, než potrebovalo napodobňovanie. V reálnom čase je to tu stále lacné: 193 s na seed na jednom jadre CPU (Mac mini M4 Pro; malé MLP z MPS nič nezíska).
+
+**Chyba, ktorú stojí za to si nechať.** V prvom behu seedy dokončili 50, 43 a 42 z 50 tratí a slabšie dva mali priemerný postup okolo 72 %, a to nesedí: 43 dokončených kôl plus 7 bežných nehôd by dalo viac. Čísla hovorili, že zlyhania sa takmer nepohli zo štartu, tak som sa pozrel. Viaceré autá boli v poriadku a jazdili **dozadu**, až 3,9 kola opačným smerom. Riadenie v tomto simulátore otáča auto aj pri rýchlosti 0, takže pri štarte z miesta sa politika otočila na mieste a nič v jej 8 vstupoch neukazuje, ktorým smerom kolo ide. Tréning jej tento problém nikdy neukázal, lebo autá sa vždy objavili v pohybe, 0–200 px/s. Polovica objavení je teraz štart z miesta. Seed 2 tým skočil zo 42 na 50 kôl a seed 0 ostal na 50.
+
+Seed 1 to neopravilo, stále dokončí 43 so 4 kolami opačným smerom. Jeho odmena ostáva okolo 0,05 na krok oproti 0,07 pri zvyšných dvoch, takže uviazol v horšom návyku. Šesť z jeho siedmich zlyhaní je na tratiach, kde zlyháva aj baseline. Tri seedy nepovedia, ako často sa to stáva, takže výsledok čítaj ako „väčšinou výborné, niekedy nie“ a všimni si, čo to znamená: jeden beh PPO nie je spoľahlivý výsledok.
+
+**Limity.** Opravu štartu z miesta som vybral po pohľade na zlyhania na 50 neznámych tratiach, takže tie už pre PPO nie sú úplne nezávislé. Štart z miesta je jediná slabina tejto politiky, ktorú som overoval, a je to skutočná medzera v tréningu, nie úprava na jednu trať, ale čisté tvrdenie by potrebovalo nové trate. Všetky trate idú proti smeru hodinových ručičiek, takže „zatoč doľava“ je zadarmo nápoveda, ktorú by zrkadlená trať vzala. Evolúcia, plánovaná do tohto porovnania, zatiaľ nie je postavená.
+
 ## Ďalšie kapitoly
 
 Kapitoly pribúdajú len tam, kde autíčka naozaj pomôžu. Aktuálny plán:
@@ -171,7 +206,6 @@ Kapitoly pribúdajú len tam, kde autíčka naozaj pomôžu. Aktuálny plán:
 | Krok (fáza) | Nápad na kapitolu |
 |---|---|
 | P2 · klasické ML, evaluácia | **Zovšeobecňuje to?** Všetci vodiči × train/val/test trate v jednej tabuľke; overfitting na 1 trati vs na 10 tratiach; výber podľa validácie. Plus **evolúcia**: optimalizácia bez gradientov v porovnaní s GD. |
-| po P3 · RL | **Reinforcement learning:** PPO sa učí len z odmeny (postup − nabúrania). Napodobňovanie vs evolúcia vs RL na tých istých testovacích tratiach. |
 | P10 · inferencia | export vodiča do ONNX / Core ML, 1000 áut naraz, FPS pred/po, kvantizácia. |
 | P11 · MLOps | každý tréning zalogovaný v MLflow; CI kontrola zlyhá, ak je nový model na testovacích tratiach pomalší. |
 
@@ -198,6 +232,7 @@ uv run python -m chapters.ch03_vectors --watch
 uv run python -m chapters.ch04_imitation      # ~1,5 min, autograd v čistom Pythone je pomalý
 uv run python -m chapters.ch06_crash_risk     # predpoveď nabúrania, ~1 min
 uv run python -m chapters.ch11_pixels        # CNN vs MLP na pixeloch, 3 seedy na MPS (s --watch uložený model)
+uv run python -m chapters.ch12_ppo            # PPO + kontrola DAgger, 3 seedy, ~4 min na seed na CPU (s --watch uložený beh)
 uv run python -m chapters.play                # jazdíš ty, nahrá data/my_laps.npz
 ```
 
