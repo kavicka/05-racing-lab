@@ -1,6 +1,6 @@
 # 05 · Racing Lab: ML concepts, explained on cars
 
-🇸🇰 [Slovenská verzia](README.sk.md)
+🇸🇰 [Slovenská verzia](README.sk.md) · 📘 [Step-by-step tutorial](TUTORIAL.md)
 
 A small 2-D racing simulator in Python where cars learn to drive a track as fast as possible. This is not a one-off project. It is a **visual lab that grows with the roadmap**: a step gets a chapter here **when its concept maps naturally to the cars**. Steps where cars would be forced (LLM fine-tuning, RAG, agents) get a different visual example inside the step itself. You can watch each one live with `--watch`.
 

@@ -1,6 +1,6 @@
 # 05 · Racing Lab: ML pojmy vysvetlené na autíčkach
 
-🇬🇧 [English version](README.md)
+🇬🇧 [English version](README.md) · 📘 [Tutoriál krok za krokom](TUTORIAL.sk.md)
 
 Malý 2-D pretekársky simulátor v Pythone, kde sa autíčka učia prejsť trať čo najrýchlejšie. Nie je to jednorazový projekt, ale **vizuálne laboratórium, ktoré rastie spolu s roadmapou**: krok tu dostane kapitolu **vtedy, keď sa jeho pojem na autíčka prirodzene hodí**. Kroky, kde by to bolo nasilu (fine-tuning LLM, RAG, agenti), dostanú iný vizuálny príklad priamo v danom kroku. Každú si môžeš pozrieť naživo s `--watch`.
 
