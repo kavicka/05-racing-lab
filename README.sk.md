@@ -6,6 +6,13 @@ Malý 2-D pretekársky simulátor v Pythone, kde sa autíčka učia prejsť tra�
 
 ![Kapitola 04: MLP postavená na mojom micrograde jazdí po trati, ktorú nikdy nevidela](assets/ch04_imitation.gif)
 
+## Najprv jednoducho
+Predstav si autíčko na trati. V každom okamihu dostane niekoľko čísel, ktoré opisujú vzdialenosť od okraja cesty a jeho rýchlosť. Musí zvoliť dve veci: **kam zatočiť a koľko pridať alebo ubrať plyn**. Simulátor potom posunie auto, skontroluje náraz a zmeria postup a čas kola.
+
+Každá kapitola ukazuje iný spôsob, ako tieto rozhodnutia robiť. Najprv autá ovládajú jednoduché pravidlá, potom sieť napodobňuje skúseného vodiča a neskôr sa učí z vlastných jázd podľa odmeny za postup. Pri učení pokusom a omylom vidí výsledok akcie, napríklad náraz alebo rýchlejší prejazd, a postupne upravuje svoje rozhodnutia. Jednotlivé kapitoly sú samostatné experimenty; prvé kapitoly ešte autá netrénujú.
+
+**Ako spoznáme zlepšenie:** sledujeme počet dokončených kôl na tratiach, ktoré auto pri tréningu nevidelo, a čas na tých istých úspešne dokončených tratiach. V kapitole 12 sa dvom z troch behov učenia pomocou odmeny podarilo dokončiť všetkých 50 neznámych tratí; tretí dokončil 43. Na spoločných dokončených tratiach boli úspešné behy približne o 34 % rýchlejšie než pravidlový vodič. GIFy ukazujú správanie, tabuľky hovoria, či sa zlepšenie opakuje.
+
 ## Kapitoly
 
 | Kap. | Krok | Čo vidíš na autíčkach | Koncept | Stav |

@@ -6,6 +6,13 @@ A small 2-D racing simulator in Python where cars learn to drive a track as fast
 
 ![Chapter 04: an MLP built on my own micrograd drives a track it has never seen](assets/ch04_imitation.gif)
 
+## Start here
+Imagine a car on a track. At each moment it receives a few numbers describing its distance from the road edges and its speed. It must choose two things: **where to steer and how much to accelerate or brake**. The simulator moves the car, checks for a crash, and records progress and lap time.
+
+Each chapter explores a different way to make those choices. Cars first follow simple rules, then a network imitates an experienced driver, and later another network learns from its own drives using a reward for progress. In trial-and-error learning it observes the result of an action, such as a crash or a faster lap, and gradually changes its decisions. Chapters are separate experiments; the first ones do not train cars yet.
+
+**How we judge improvement:** we count completed laps on tracks unseen during training and compare times on the same successfully completed tracks. In chapter 12, two of three reward-learning runs completed all 50 unseen tracks; the third completed 43. On tracks both drivers finished, the successful runs were about 34% faster than the rule-based driver. GIFs show behaviour; the tables show whether improvement repeats.
+
 ## Chapters
 
 | Ch. | Step | What you see on the cars | Concept | Status |
